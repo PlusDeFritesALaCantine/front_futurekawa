@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FutureKawa Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">FutureKawa</p>
+          <h1>Tableau de bord simple</h1>
+          <p class="lead">Suivi des lots, alertes et dernière mesure par pays.</p>
+        </div>
+        <button id="refreshBtn" class="button">Actualiser</button>
+      </header>
+
+      <section class="panel">
+        <h2>État du backend</h2>
+        <div id="healthCard" class="card muted">Chargement…</div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>Pays disponibles</h2>
+          <ul id="paysList" class="list"></ul>
+        </article>
+
+        <article class="panel">
+          <h2>Résumé global</h2>
+          <div id="dashboardSummary" class="summary"></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>Détail par pays</h2>
+        <div id="dashboardCards" class="cards"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
