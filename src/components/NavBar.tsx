@@ -29,6 +29,10 @@ export default function NavBar() {
           Alertes
         </NavLink>
       </nav>
+      <div className="sidebar-footer">
+        <span className="sidebar-footer-dot" />
+        Brésil · Équateur · Colombie
+      </div>
     </aside>
   )
 }

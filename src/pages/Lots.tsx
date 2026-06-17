@@ -1,28 +1,29 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import api from '../api/client.js'
-import StatutBadge from '../components/StatutBadge.jsx'
+import api from '../api/client'
+import StatutBadge from '../components/StatutBadge'
+import type { Lot, Pays } from '../types'
 
-const PAYS = ['bresil', 'equateur', 'colombie']
+const PAYS: Pays[] = ['bresil', 'equateur', 'colombie']
 
 export default function Lots() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [pays, setPays] = useState(searchParams.get('pays') || 'bresil')
-  const [lots, setLots] = useState([])
+  const [pays, setPays] = useState<string>(searchParams.get('pays') || 'bresil')
+  const [lots, setLots] = useState<Lot[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     setLoading(true)
     setError(null)
-    api.get(`/pays/${pays}/lots`)
+    api.get<Lot[]>(`/pays/${pays}/lots`)
       .then(r => setLots(r.data))
       .catch(() => setError(`API ${pays} indisponible`))
       .finally(() => setLoading(false))
   }, [pays])
 
-  function handlePays(val) {
+  function handlePays(val: string) {
     setPays(val)
     setSearchParams({ pays: val })
   }
@@ -40,14 +41,14 @@ export default function Lots() {
           {PAYS.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
         </select>
         {!loading && !error && (
-          <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{lots.length} lot{lots.length > 1 ? 's' : ''}</span>
+          <span className="controls-count">{lots.length} lot{lots.length > 1 ? 's' : ''}</span>
         )}
       </div>
 
       {error && <div className="error-banner">{error}</div>}
 
       {loading ? (
-        <div className="loading">Chargement…</div>
+        <div className="loading"><span className="spinner" />Chargement…</div>
       ) : lots.length === 0 ? (
         <div className="empty">Aucun lot pour ce pays.</div>
       ) : (
@@ -70,11 +71,11 @@ export default function Lots() {
                   className={`row-${lot.statut} clickable`}
                   onClick={() => navigate(`/lots/${pays}/${lot.id}`)}
                 >
-                  <td style={{ fontWeight: 600, fontFamily: 'monospace' }}>{lot.id}</td>
+                  <td className="cell-mono">{lot.id}</td>
                   <td>{lot.exploitation}</td>
-                  <td style={{ color: 'var(--muted)' }}>{lot.entrepot_id}</td>
+                  <td className="cell-muted">{lot.entrepot_id}</td>
                   <td>{new Date(lot.date_stockage).toLocaleDateString('fr-FR')}</td>
-                  <td style={{ color: 'var(--muted)' }}>{anciennete(lot.date_stockage)}</td>
+                  <td className="cell-muted">{anciennete(lot.date_stockage)}</td>
                   <td><StatutBadge statut={lot.statut} /></td>
                 </tr>
               ))}
@@ -86,8 +87,8 @@ export default function Lots() {
   )
 }
 
-function anciennete(dateStr) {
-  const j = Math.floor((Date.now() - new Date(dateStr)) / 86400000)
+function anciennete(dateStr: string): string {
+  const j = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000)
   if (j < 30) return `${j} j`
   if (j < 365) return `${Math.floor(j / 30)} mois`
   return `${Math.floor(j / 365)} an${j >= 730 ? 's' : ''}`

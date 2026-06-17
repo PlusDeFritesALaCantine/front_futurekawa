@@ -1,9 +1,10 @@
 import { Routes, Route } from 'react-router-dom'
-import NavBar from './components/NavBar.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import Lots from './pages/Lots.jsx'
-import LotDetail from './pages/LotDetail.jsx'
-import Alertes from './pages/Alertes.jsx'
+import NavBar from './components/NavBar'
+import AlertToasts from './components/AlertToasts'
+import Dashboard from './pages/Dashboard'
+import Lots from './pages/Lots'
+import LotDetail from './pages/LotDetail'
+import Alertes from './pages/Alertes'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/alertes" element={<Alertes />} />
         </Routes>
       </main>
+      <AlertToasts />
     </div>
   )
 }

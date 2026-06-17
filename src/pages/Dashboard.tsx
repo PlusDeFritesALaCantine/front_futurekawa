@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '../api/client.js'
-import StatutBadge from '../components/StatutBadge.jsx'
+import api from '../api/client'
+import StatutBadge from '../components/StatutBadge'
+import type { DashboardResponse } from '../types'
 
 export default function Dashboard() {
-  const [data, setData] = useState(null)
-  const [error, setError] = useState(null)
+  const [data, setData] = useState<DashboardResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
-    api.get('/dashboard')
+    api.get<DashboardResponse>('/dashboard')
       .then(r => setData(r.data))
       .catch(() => setError('Impossible de contacter le backend siège.'))
   }, [])
@@ -21,7 +22,7 @@ export default function Dashboard() {
     </div>
   )
 
-  if (!data) return <div className="loading">Chargement…</div>
+  if (!data) return <div className="loading"><span className="spinner" />Chargement…</div>
 
   const pays = data.pays ?? []
   const totalLots = pays.reduce((s, p) => s + (p.nb_lots ?? 0), 0)
@@ -35,8 +36,7 @@ export default function Dashboard() {
         <p>Vue consolidée de tous les pays</p>
       </div>
 
-      {/* Résumé global */}
-      <div style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
+      <div className="summary-row">
         <SumStat n={pays.length} label="Pays" />
         <SumStat n={paysOk} label="En ligne" color="var(--conforme)" />
         <SumStat n={totalLots} label="Lots total" />
@@ -63,7 +63,7 @@ export default function Dashboard() {
                     <div className="l">Lots</div>
                   </div>
                   <div className="stat">
-                    <div className={`n ${p.nb_alertes > 0 ? 'danger' : ''}`}>{p.nb_alertes ?? '—'}</div>
+                    <div className={`n ${(p.nb_alertes ?? 0) > 0 ? 'danger' : ''}`}>{p.nb_alertes ?? '—'}</div>
                     <div className="l">Alertes</div>
                   </div>
                 </div>
@@ -96,11 +96,17 @@ export default function Dashboard() {
   )
 }
 
-function SumStat({ n, label, color }) {
+interface SumStatProps {
+  n: number
+  label: string
+  color?: string
+}
+
+function SumStat({ n, label, color }: SumStatProps) {
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 28px', minWidth: 100 }}>
-      <span style={{ fontSize: '2rem', fontWeight: 800, color: color ?? 'var(--text)', lineHeight: 1 }}>{n}</span>
-      <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '.8px', color: 'var(--muted)', marginTop: 4 }}>{label}</span>
+    <div className="card sum-stat">
+      <span className="sum-stat-n" style={{ color: color ?? 'var(--text)' }}>{n}</span>
+      <span className="sum-stat-l">{label}</span>
     </div>
   )
 }

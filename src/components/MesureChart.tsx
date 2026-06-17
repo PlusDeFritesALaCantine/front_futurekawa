@@ -3,17 +3,26 @@ import {
   CategoryScale, LinearScale,
   PointElement, LineElement,
   Title, Tooltip, Legend, Filler,
+  type ChartData, type ChartOptions,
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
+import type { Mesure } from '../types'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
-const CONFIG = {
+type MesureType = 'temperature' | 'humidity'
+
+const CONFIG: Record<MesureType, { ideal: number; min: number; max: number; unit: string; color: string }> = {
   temperature: { ideal: 29, min: 26, max: 32, unit: '°C', color: '#3b82f6' },
   humidity:    { ideal: 55, min: 53, max: 57, unit: '%',  color: '#8b5cf6' },
 }
 
-export default function MesureChart({ mesures, type }) {
+interface MesureChartProps {
+  mesures: Mesure[]
+  type: MesureType
+}
+
+export default function MesureChart({ mesures, type }: MesureChartProps) {
   const { ideal, min, max, unit, color } = CONFIG[type]
   const n = mesures.length
 
@@ -21,7 +30,7 @@ export default function MesureChart({ mesures, type }) {
     new Date(m.timestamp).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
   )
 
-  const data = {
+  const data: ChartData<'line'> = {
     labels,
     datasets: [
       {
@@ -69,7 +78,7 @@ export default function MesureChart({ mesures, type }) {
     ],
   }
 
-  const options = {
+  const options: ChartOptions<'line'> = {
     responsive: true,
     interaction: { mode: 'index', intersect: false },
     plugins: {

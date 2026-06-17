@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import api from '../api/client.js'
-import StatutBadge from '../components/StatutBadge.jsx'
-import MesureChart from '../components/MesureChart.jsx'
+import api from '../api/client'
+import StatutBadge from '../components/StatutBadge'
+import MesureChart from '../components/MesureChart'
+import type { Lot, Mesure } from '../types'
 
 export default function LotDetail() {
-  const { pays, lotId } = useParams()
-  const [lot, setLot] = useState(null)
-  const [mesures, setMesures] = useState([])
-  const [error, setError] = useState(null)
+  const { pays, lotId } = useParams<{ pays: string; lotId: string }>()
+  const [lot, setLot] = useState<Lot | null>(null)
+  const [mesures, setMesures] = useState<Mesure[]>([])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
-      api.get(`/pays/${pays}/lots`),
-      api.get(`/pays/${pays}/mesures`),
+      api.get<Lot[]>(`/pays/${pays}/lots`),
+      api.get<Mesure[]>(`/pays/${pays}/mesures`),
     ])
       .then(([lotsRes, mesuresRes]) => {
         const found = lotsRes.data.find(l => l.id === lotId)
@@ -21,7 +22,7 @@ export default function LotDetail() {
         setLot(found)
         const filtrees = mesuresRes.data
           .filter(m => m.entrepot_id === found.entrepot_id)
-          .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+          .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
         setMesures(filtrees)
       })
       .catch(() => setError(`Impossible de charger les données pour ${pays}.`))
@@ -34,7 +35,7 @@ export default function LotDetail() {
     </div>
   )
 
-  if (!lot) return <div className="loading">Chargement…</div>
+  if (!lot) return <div className="loading"><span className="spinner" />Chargement…</div>
 
   return (
     <div>
@@ -42,13 +43,13 @@ export default function LotDetail() {
 
       <div className="page-header">
         <h2>{lot.id}</h2>
-        <p>{lot.exploitation} — {pays.charAt(0).toUpperCase() + pays.slice(1)}</p>
+        <p>{lot.exploitation} — {pays ? pays.charAt(0).toUpperCase() + pays.slice(1) : ''}</p>
       </div>
 
       <div className="info-grid">
         <div className="info-item">
           <label>ID</label>
-          <p style={{ fontFamily: 'monospace' }}>{lot.id}</p>
+          <p className="cell-mono">{lot.id}</p>
         </div>
         <div className="info-item">
           <label>Exploitation</label>

@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react'
-import api from '../api/client.js'
-import StatutBadge from '../components/StatutBadge.jsx'
+import api from '../api/client'
+import StatutBadge from '../components/StatutBadge'
+import type { AlertesResponse, Pays } from '../types'
 
-const PAYS = ['bresil', 'equateur', 'colombie']
+const PAYS: Pays[] = ['bresil', 'equateur', 'colombie']
 
 export default function Alertes() {
-  const [pays, setPays] = useState('bresil')
-  const [data, setData] = useState(null)
+  const [pays, setPays] = useState<string>('bresil')
+  const [data, setData] = useState<AlertesResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
     setError(null)
     setData(null)
-    api.get(`/pays/${pays}/alertes`)
+    api.get<AlertesResponse>(`/pays/${pays}/alertes`)
       .then(r => setData(r.data))
       .catch(() => setError(`API ${pays} indisponible`))
       .finally(() => setLoading(false))
@@ -44,7 +45,7 @@ export default function Alertes() {
       {error && <div className="error-banner">{error}</div>}
 
       {loading ? (
-        <div className="loading">Chargement…</div>
+        <div className="loading"><span className="spinner" />Chargement…</div>
       ) : !data ? null : (
         <>
           <div className="section-header">
@@ -52,7 +53,7 @@ export default function Alertes() {
           </div>
 
           {nbLots === 0 ? (
-            <div className="empty" style={{ padding: '20px 0' }}>Aucun lot périmé.</div>
+            <div className="empty empty-inline">Aucun lot périmé.</div>
           ) : (
             data.lots_problematiques.map(({ lot, raison }) => (
               <div key={lot.id} className="alert-item lot">
@@ -62,7 +63,7 @@ export default function Alertes() {
                     {lot.exploitation} — stocké le {new Date(lot.date_stockage).toLocaleDateString('fr-FR')}
                   </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                <div className="alert-right">
                   <StatutBadge statut={lot.statut} />
                   <span className="alert-raison">{raison}</span>
                 </div>
@@ -70,12 +71,12 @@ export default function Alertes() {
             ))
           )}
 
-          <div className="section-header" style={{ marginTop: 28 }}>
+          <div className="section-header section-header-spaced">
             Mesures hors seuil ({nbMesures})
           </div>
 
           {nbMesures === 0 ? (
-            <div className="empty" style={{ padding: '20px 0' }}>Aucune mesure hors seuil.</div>
+            <div className="empty empty-inline">Aucune mesure hors seuil.</div>
           ) : (
             data.mesures_hors_seuil.map(({ mesure, raison }) => (
               <div key={mesure.id} className="alert-item mesure">
