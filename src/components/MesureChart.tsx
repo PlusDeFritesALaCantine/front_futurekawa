@@ -6,24 +6,21 @@ import {
   type ChartData, type ChartOptions,
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
-import type { Mesure } from '../types'
+import type { Mesure, Pays } from '../types'
+import { getSeuil, type MesureType } from '../config/seuils'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
-
-type MesureType = 'temperature' | 'humidity'
-
-const CONFIG: Record<MesureType, { ideal: number; min: number; max: number; unit: string; color: string }> = {
-  temperature: { ideal: 29, min: 26, max: 32, unit: '°C', color: '#3b82f6' },
-  humidity:    { ideal: 55, min: 53, max: 57, unit: '%',  color: '#8b5cf6' },
-}
 
 interface MesureChartProps {
   mesures: Mesure[]
   type: MesureType
+  pays: Pays
 }
 
-export default function MesureChart({ mesures, type }: MesureChartProps) {
-  const { ideal, min, max, unit, color } = CONFIG[type]
+export default function MesureChart({ mesures, type, pays }: MesureChartProps) {
+  const { ideal, min, max } = getSeuil(pays, type)
+  const unit = type === 'temperature' ? '°C' : '%'
+  const color = type === 'temperature' ? '#3b82f6' : '#8b5cf6'
   const n = mesures.length
 
   const labels = mesures.map(m =>
@@ -90,8 +87,8 @@ export default function MesureChart({ mesures, type }: MesureChartProps) {
         grid: { color: '#f1f5f9' },
       },
       y: {
-        min: type === 'temperature' ? 20 : 45,
-        max: type === 'temperature' ? 40 : 65,
+        min: type === 'temperature' ? min - 6 : min - 8,
+        max: max + 8,
         ticks: { font: { size: 10 } },
         grid: { color: '#f1f5f9' },
       },
