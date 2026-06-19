@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import Lots from './pages/Lots'
 import LotDetail from './pages/LotDetail'
 import Alertes from './pages/Alertes'
+import Automatisation from './pages/Automatisation'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/lots" element={<Lots />} />
           <Route path="/lots/:pays/:lotId" element={<LotDetail />} />
           <Route path="/alertes" element={<Alertes />} />
+          <Route path="/automatisation" element={<Automatisation />} />
         </Routes>
       </main>
       <AlertToasts />
