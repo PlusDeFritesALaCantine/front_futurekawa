@@ -440,6 +440,18 @@ tr.clickable:hover { filter: brightness(.97); }
 .alert-meta  { font-size: 0.75rem; color: var(--muted); }
 .alert-raison { font-size: 0.8rem; color: var(--muted); text-align: right; max-width: 300px; }
 
+.severite-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.severite-critique { background: #fee2e2; color: #b91c1c; }
+.severite-bas      { background: #ffedd5; color: #c2410c; }
+
 /* ── Utils ───────────────────────────────── */
 .loading {
   display: flex;

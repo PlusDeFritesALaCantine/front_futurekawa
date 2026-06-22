@@ -29,6 +29,7 @@ export interface AlerteLot {
 export interface AlerteMesure {
   mesure: Mesure
   raison: string
+  severite: 'bas' | 'critique'
 }
 
 export interface AlertesResponse {

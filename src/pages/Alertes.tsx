@@ -78,10 +78,15 @@ export default function Alertes() {
           {nbMesures === 0 ? (
             <div className="empty empty-inline">Aucune mesure hors seuil.</div>
           ) : (
-            data.mesures_hors_seuil.map(({ mesure, raison }) => (
+            data.mesures_hors_seuil.map(({ mesure, raison, severite }) => (
               <div key={mesure.id} className="alert-item mesure">
                 <div className="alert-left">
-                  <span className="alert-id">{mesure.entrepot_id}</span>
+                  <span className="alert-id">
+                    {mesure.entrepot_id}
+                    <span className={`severite-badge severite-${severite}`}>
+                      {severite}
+                    </span>
+                  </span>
                   <span className="alert-meta">
                     {new Date(mesure.timestamp).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
                     {' — '}{mesure.temperature?.toFixed(1)}°C / {mesure.humidity?.toFixed(1)}%
