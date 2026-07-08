@@ -57,6 +57,9 @@ jobs:
         with:
           name: front-dist
           path: dist/
+          
+      - name: Installer l'exécutable Chromium
+        run: npx playwright install chromium
 
       - name: Tests end-to-end
         run: npm run test:e2e
