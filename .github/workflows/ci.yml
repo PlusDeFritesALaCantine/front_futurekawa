@@ -8,7 +8,6 @@ on:
 jobs:
   validate:
     runs-on: shared-runners
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,40 +15,51 @@ jobs:
       - name: Installer Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
 
       - name: Installer les dépendances
         run: npm ci
 
-      - name: Vérification des types & Build
-        run: |
-          npm run typecheck
-          npm run build
-
-      - name: Tests unitaires
-        run: npm run test -- --run
-
-  test-e2e:
-    needs: validate
-    runs-on: shared-runners
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Installer Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-
-      - name: Installer les navigateurs Playwright
-        run: npx playwright install --with-deps chromium
-
-      - name: Tests end-to-end
-        run: npm run test:e2e
+      - name: Vérification des types
+        run: npm run typecheck
 
       - name: Build de production
         run: npm run build
+
+      - name: Tests unitaires
+        run: npm run test -- --run
+      - name: Sauvegarder le Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: front-dist
+          path: dist/ 
+          retention-days: 1
+
+  test-e2e:
+    needs: validate
+    runs-on: shared-runners 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci 
+
+      - name: Récupérer le Build du job précédent
+        uses: actions/download-artifact@v4
+        with:
+          name: front-dist
+          path: dist/
+
+      - name: Tests end-to-end
+        run: npm run test:e2e
 
       - name: Publier le rapport Playwright
         if: always()
