@@ -2,12 +2,12 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: ["main", "test_moua"]
   pull_request:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  validate:
+    runs-on: shared-runners
 
     steps:
       - name: Checkout
@@ -22,11 +22,25 @@ jobs:
       - name: Installer les dépendances
         run: npm ci
 
-      - name: Vérification des types
-        run: npm run typecheck
+      - name: Vérification des types & Build
+        run: |
+          npm run typecheck
+          npm run build
 
       - name: Tests unitaires
         run: npm run test -- --run
+
+  test-e2e:
+    needs: validate
+    runs-on: shared-runners
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
 
       - name: Installer les navigateurs Playwright
         run: npx playwright install --with-deps chromium
