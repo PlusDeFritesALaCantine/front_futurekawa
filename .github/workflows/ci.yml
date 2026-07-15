@@ -29,28 +29,68 @@ jobs:
 
       - name: Tests unitaires
         run: npm run test -- --run
+
       - name: Sauvegarder le Build
         uses: actions/upload-artifact@v4
         with:
           name: front-dist
-          path: dist/ 
+          path: dist/
           retention-days: 1
 
   test-e2e:
     needs: validate
-    runs-on: shared-runners 
+    runs-on: shared-runners
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
       - name: Récupérer le Build du job précédent
         uses: actions/download-artifact@v4
         with:
           name: front-dist
           path: dist/
-          
+
       - name: Installer l'exécutable Chromium
-        run: npx playwright install chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Installer nginx
+        run: sudo apt-get update && sudo apt-get install -y nginx
+
+      - name: Configurer nginx pour servir dist/
+        run: |
+          sudo rm -f /etc/nginx/sites-enabled/default
+          echo "server {
+            listen 8080;
+            root $(pwd)/dist;
+            index index.html;
+            location / {
+              try_files \$uri \$uri/ /index.html;
+            }
+          }" | sudo tee /etc/nginx/sites-available/e2e
+          sudo ln -sf /etc/nginx/sites-available/e2e /etc/nginx/sites-enabled/e2e
+          sudo systemctl restart nginx
+
+      - name: Attendre que nginx soit prêt
+        run: |
+          for i in {1..10}; do
+            curl -sf http://localhost:8080 && break
+            echo "En attente de nginx... ($i)"
+            sleep 1
+          done
 
       - name: Tests end-to-end
         run: npm run test:e2e
+        env:
+          BASE_URL: http://localhost:8080
 
       - name: Publier le rapport Playwright
         if: always()
@@ -59,3 +99,7 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+      - name: Arrêter nginx
+        if: always()
+        run: sudo systemctl stop nginx
