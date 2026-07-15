@@ -60,7 +60,9 @@ jobs:
           path: dist/
 
       - name: Installer l'exécutable Chromium
-        run: npx playwright install --with-deps chromium
+        run: |
+          npx playwright install chromium
+          npx playwright install-deps chromium
 
       - name: Installer nginx
         run: sudo apt-get update && sudo apt-get install -y nginx
