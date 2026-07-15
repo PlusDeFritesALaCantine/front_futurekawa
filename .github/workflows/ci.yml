@@ -76,8 +76,8 @@ jobs:
               try_files \$uri \$uri/ /index.html;
             }
           }" | sudo tee /etc/nginx/sites-available/e2e
-          sudo ln -sf /etc/nginx/sites-available/e2e /etc/nginx/sites-enabled/e2e
-          sudo systemctl restart nginx
+          sudo ln -sf /etc/nginx/sites-available/e2e /etc/nginx/sites-enabled/e2e          
+          sudo nginx -g 'daemon on;'
 
       - name: Attendre que nginx soit prêt
         run: |
@@ -102,4 +102,6 @@ jobs:
 
       - name: Arrêter nginx
         if: always()
-        run: sudo systemctl stop nginx
+        run: |
+          # Arrêt direct du binaire sans passer par systemctl
+          sudo nginx -s quit || true
