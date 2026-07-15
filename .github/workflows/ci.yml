@@ -59,38 +59,28 @@ jobs:
           name: front-dist
           path: dist/
 
-      - name: Installer l'exécutable Chromium
+      - name: Installer Chromium et dépendances minimales
         run: |
           npx playwright install chromium
           npx playwright install-deps chromium
 
-      - name: Installer nginx
-        run: sudo apt-get update && sudo apt-get install -y nginx
-
-      - name: Configurer nginx pour servir dist/
+      - name: Démarrer le serveur web statique (Ultra-léger)
+        # On lance sirv en arrière-plan sur le port 8080 en redirigeant les requêtes vers index.html (SPA mode)
         run: |
-          sudo rm -f /etc/nginx/sites-enabled/default
-          echo "server {
-            listen 8080;
-            root $(pwd)/dist;
-            index index.html;
-            location / {
-              try_files \$uri \$uri/ /index.html;
-            }
-          }" | sudo tee /etc/nginx/sites-available/e2e
-          sudo ln -sf /etc/nginx/sites-available/e2e /etc/nginx/sites-enabled/e2e          
-          sudo nginx -g 'daemon on;'
+          npx sirv-cli dist --port 8080 --single --quiet &
+          echo "SERVER_PID=$!" >> $GITHUB_ENV
 
-      - name: Attendre que nginx soit prêt
+      - name: Attendre que le serveur soit prêt
         run: |
           for i in {1..10}; do
             curl -sf http://localhost:8080 && break
-            echo "En attente de nginx... ($i)"
+            echo "En attente du serveur web... ($i)"
             sleep 1
           done
 
       - name: Tests end-to-end
-        run: npm run test:e2e
+        # On force 1 seul worker pour économiser la RAM
+        run: npm run test:e2e -- --workers=1
         env:
           BASE_URL: http://localhost:8080
 
@@ -102,8 +92,10 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-      - name: Arrêter nginx
+      - name: Arrêter le serveur web
         if: always()
         run: |
-          # Arrêt direct du binaire sans passer par systemctl
-          sudo nginx -s quit || true
+          # On coupe proprement le processus Node du serveur web s'il est défini
+          if [ -n "$SERVER_PID" ]; then
+            kill $SERVER_PID || true
+          fi
