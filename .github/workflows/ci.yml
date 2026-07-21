@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD Front-end
 
 on:
   push:
@@ -65,7 +65,6 @@ jobs:
           npx playwright install-deps chromium
 
       - name: Démarrer le serveur web statique (Ultra-léger)
-        # On lance sirv en arrière-plan sur le port 8080 en redirigeant les requêtes vers index.html (SPA mode)
         run: |
           npx sirv-cli dist --port 8080 --single --quiet &
           echo "SERVER_PID=$!" >> $GITHUB_ENV
@@ -79,7 +78,6 @@ jobs:
           done
 
       - name: Tests end-to-end
-        # On force 1 seul worker pour économiser la RAM
         run: npm run test:e2e -- --workers=1
         env:
           BASE_URL: http://localhost:8080
@@ -95,7 +93,59 @@ jobs:
       - name: Arrêter le serveur web
         if: always()
         run: |
-          # On coupe proprement le processus Node du serveur web s'il est défini
           if [ -n "$SERVER_PID" ]; then
             kill $SERVER_PID || true
           fi
+
+  build-and-push:
+    needs: [validate, test-e2e]
+    if: github.event_name == 'push'
+    runs-on: shared-runners
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Connexion à GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build et Push de l'image Docker
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          build-args: |
+            VITE_API_URL=http://api.futurekawa.local
+          tags: |
+            ghcr.io/plusdefritesalacantine/futurekawa-front:latest
+            ghcr.io/plusdefritesalacantine/futurekawa-front:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    if: github.event_name == 'push'
+    runs-on: shared-runners
+    steps:
+      - name: Mise à jour du projet sur le serveur via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            REPO_DIR="/home/moua/${{ github.event.repository.name }}"
+
+            if [ -d "$REPO_DIR/.git" ]; then
+              echo "==> Mise à jour du dépôt existant..."
+              cd "$REPO_DIR"
+              git fetch origin
+              git reset --hard origin/${{ github.ref_name }}
+            else
+              echo "==> Premier déploiement : Clonage du dépôt..."
+              git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }}.git "$REPO_DIR"
+            fi
+            
+            kubectl rollout restart deployment/futurekawa-front -n futurekawa-app || true
