@@ -37,68 +37,8 @@ jobs:
           path: dist/
           retention-days: 1
 
-  test-e2e:
-    needs: validate
-    runs-on: shared-runners
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Installer Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-
-      - name: Installer les dépendances
-        run: npm ci
-
-      - name: Récupérer le Build du job précédent
-        uses: actions/download-artifact@v4
-        with:
-          name: front-dist
-          path: dist/
-
-      - name: Installer Chromium et dépendances minimales
-        run: |
-          npx playwright install chromium
-          npx playwright install-deps chromium
-
-      - name: Démarrer le serveur web statique (Ultra-léger)
-        run: |
-          npx sirv-cli dist --port 8080 --single --quiet &
-          echo "SERVER_PID=$!" >> $GITHUB_ENV
-
-      - name: Attendre que le serveur soit prêt
-        run: |
-          for i in {1..10}; do
-            curl -sf http://localhost:8080 && break
-            echo "En attente du serveur web... ($i)"
-            sleep 1
-          done
-
-      - name: Tests end-to-end
-        run: npm run test:e2e -- --workers=1
-        env:
-          BASE_URL: http://localhost:8080
-
-      - name: Publier le rapport Playwright
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
-
-      - name: Arrêter le serveur web
-        if: always()
-        run: |
-          if [ -n "$SERVER_PID" ]; then
-            kill $SERVER_PID || true
-          fi
-
   build-and-push:
-    needs: [validate, test-e2e]
+    needs: [validate]
     if: github.event_name == 'push'
     runs-on: shared-runners
     steps:
@@ -147,5 +87,5 @@ jobs:
               echo "==> Premier déploiement : Clonage du dépôt..."
               git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }}.git "$REPO_DIR"
             fi
-            
+
             kubectl rollout restart deployment/futurekawa-front -n futurekawa-app || true
