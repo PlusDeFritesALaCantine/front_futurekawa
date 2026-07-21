@@ -17,7 +17,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: front
-          image: ghcr.io/plusdefritesalacantine/futurekawa-front:latest
+          image: ghcr.io/plusdefritesalacantine/front_futurekawa:latest
           ports:
             - containerPort: 80
           resources:
