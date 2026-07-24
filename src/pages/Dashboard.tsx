@@ -34,6 +34,9 @@ export default function Dashboard() {
       <div className="page-header">
         <h2>Dashboard</h2>
         <p>Vue consolidée de tous les pays</p>
+        <button className="btn btn-primary" onClick={() => navigate('/lots/ajout')}>
+          + Ajouter un lot
+        </button>
       </div>
 
       <div className="summary-row">

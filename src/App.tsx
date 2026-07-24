@@ -4,6 +4,7 @@ import AlertToasts from './components/AlertToasts'
 import Dashboard from './pages/Dashboard'
 import Lots from './pages/Lots'
 import LotDetail from './pages/LotDetail'
+import LotAjout from './pages/LotAjout'
 import Alertes from './pages/Alertes'
 import Automatisation from './pages/Automatisation'
 
@@ -14,6 +15,7 @@ export default function App() {
       <main className="content">
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/lots/ajout" element={<LotAjout />} />
           <Route path="/lots" element={<Lots />} />
           <Route path="/lots/:pays/:lotId" element={<LotDetail />} />
           <Route path="/alertes" element={<Alertes />} />

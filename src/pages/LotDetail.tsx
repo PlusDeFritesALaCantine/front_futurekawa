@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import api from '../api/client'
 import StatutBadge from '../components/StatutBadge'
 import MesureChart from '../components/MesureChart'
@@ -11,6 +11,8 @@ export default function LotDetail() {
   const [lot, setLot] = useState<Lot | null>(null)
   const [mesures, setMesures] = useState<Mesure[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     Promise.all([
@@ -29,6 +31,14 @@ export default function LotDetail() {
       .catch(() => setError(`Impossible de charger les données pour ${pays}.`))
   }, [pays, lotId])
 
+  function handleDelete() {
+    if (!window.confirm(`Supprimer le lot ${lotId} ? Cette action est irréversible.`)) return
+    setDeleting(true)
+    api.delete(`/lots/${lotId}`)
+      .then(() => navigate(`/lots?pays=${pays}`))
+      .catch(() => { setError('Impossible de supprimer le lot.'); setDeleting(false) })
+  }
+
   if (error) return (
     <div>
       <Link to="/lots" className="back-link">← Retour aux lots</Link>
@@ -44,7 +54,17 @@ export default function LotDetail() {
 
   return (
     <div>
-      <Link to={`/lots?pays=${pays}`} className="back-link">← Retour aux lots</Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
+        <Link to={`/lots?pays=${pays}`} className="back-link" style={{ marginBottom: 0 }}>← Retour aux lots</Link>
+        <button
+          className="btn btn-danger"
+          onClick={handleDelete}
+          disabled={deleting}
+          style={{ marginLeft: 'auto' }}
+        >
+          {deleting ? 'Suppression…' : 'Supprimer le lot'}
+        </button>
+      </div>
 
       <div className="page-header">
         <h2>{lot.id}</h2>

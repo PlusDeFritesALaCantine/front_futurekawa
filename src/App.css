@@ -452,6 +452,101 @@ tr.clickable:hover { filter: brightness(.97); }
 .severite-critique { background: #fee2e2; color: #b91c1c; }
 .severite-bas      { background: #ffedd5; color: #c2410c; }
 
+/* ── Form (Ajout lot) ────────────────────── */
+.lot-form {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 28px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  animation: fadeUp .35s ease both;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } }
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--muted);
+}
+
+.form-grid input,
+.form-grid select {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.form-grid input:hover,
+.form-grid select:hover { border-color: #cbd5e1; }
+
+.form-grid input:focus,
+.form-grid select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, .12); }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .15s, box-shadow .15s;
+}
+
+.btn:active { transform: scale(.97); }
+
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+  color: #fff;
+  box-shadow: 0 4px 14px -2px rgba(59, 130, 246, .45);
+}
+
+.btn-primary:hover:not(:disabled) { box-shadow: 0 6px 20px -2px rgba(59, 130, 246, .55); }
+
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover { background: #eef1f6; }
+
+.btn-danger {
+  background: var(--perime);
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) { background: #dc2626; }
+
+.page-header .btn {
+  margin-top: 12px;
+}
+
 /* ── Utils ───────────────────────────────── */
 .loading {
   display: flex;

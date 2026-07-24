@@ -2,8 +2,6 @@ import type { Page } from '@playwright/test'
 
 const API = 'http://127.0.0.1:8002'
 
-// Ordre identique à celui renvoyé par l'API réelle : tri FIFO par date_stockage croissante
-// (le lot le plus ancien — donc le plus à risque de péremption — en premier).
 export const LOTS_BRESIL = [
   { id: 'LOT-BR-002', pays: 'bresil', exploitation: 'Fazenda Rio Verde', entrepot_id: 'entrepot-bresil-1', date_stockage: '2025-05-01', statut: 'perime' },
   { id: 'LOT-BR-001', pays: 'bresil', exploitation: 'Fazenda Santa Clara', entrepot_id: 'entrepot-bresil-1', date_stockage: '2025-12-10', statut: 'conforme' },
@@ -31,7 +29,6 @@ export const DASHBOARD_RESPONSE = {
   ],
 }
 
-/** Mocke le backend siège (port 8002) avec des réponses déterministes pour le Brésil. */
 export async function mockApi(page: Page) {
   await page.route(`${API}/dashboard`, route => route.fulfill({ json: DASHBOARD_RESPONSE }))
 
