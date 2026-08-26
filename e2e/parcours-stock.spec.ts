@@ -12,13 +12,13 @@ test('dashboard affiche la vue consolidée des 3 pays', async ({ page }) => {
   await page.goto('/')
 
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
-  await expect(page.locator('.country-card .country-name')).toHaveText(['bresil', 'equateur', 'colombie'])
+  await expect(page.locator('.ccard .ccard-name')).toHaveText(['bresil', 'equateur', 'colombie'])
 })
 
 test('sélection d\'un pays depuis le dashboard mène à ses lots triés FIFO', async ({ page }) => {
   await page.goto('/')
 
-  await page.locator('.country-card', { hasText: 'bresil' }).click()
+  await page.locator('.ccard', { hasText: 'bresil' }).click()
   await expect(page).toHaveURL(/\/lots\?pays=bresil/)
 
   const rows = page.locator('table tbody tr')
@@ -33,7 +33,7 @@ test('changer de pays sur la page Lots recharge la liste filtrée', async ({ pag
   await page.goto('/lots')
 
   await page.getByRole('combobox').selectOption('equateur')
-  await expect(page.getByText('Aucun lot pour ce pays.')).toBeVisible()
+  await expect(page.getByText('Aucun lot disponible.')).toBeVisible()
 
   await page.getByRole('combobox').selectOption('bresil')
   await expect(page.locator('table tbody tr')).toHaveCount(2)
@@ -55,13 +55,13 @@ test('consultation d\'un lot affiche ses courbes température/humidité', async 
   await expect(page).toHaveURL(/\/lots\?pays=bresil/)
 })
 
-test('page Alertes affiche les lots périmés et mesures hors seuil du pays sélectionné', async ({ page }) => {
+test('page Alertes affiche les lots périmés et mesures hors seuil', async ({ page }) => {
   await page.goto('/alertes')
 
   await expect(page.getByText('Lots problématiques (1)')).toBeVisible()
   await expect(page.getByText('Mesures hors seuil (1)')).toBeVisible()
   await expect(page.getByText('lot périmé (400 jours de stockage)')).toBeVisible()
-  await expect(page.getByText(/hors seuil \[26.0-32.0°C\]/)).toBeVisible()
+  await expect(page.getByText('température 33.5°C hors seuil [26.0-32.0°C]')).toBeVisible()
 
   await page.getByRole('combobox').selectOption('colombie')
   await expect(page.getByText('Aucun lot périmé.')).toBeVisible()
@@ -82,5 +82,5 @@ test('la navigation latérale couvre les 4 sections principales', async ({ page 
   await expect(page.getByRole('heading', { name: 'Automatisation des entrepôts' })).toBeVisible()
 
   await page.getByRole('link', { name: 'Dashboard' }).click()
-  await expect(page).toHaveURL('http://127.0.0.1:4173/')
+  await expect(page).toHaveURL(/\/$/)
 })
