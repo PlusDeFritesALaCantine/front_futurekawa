@@ -37,16 +37,18 @@ export default function LotAjout() {
     setError(null)
 
     api.post('/lots', form)
-      .then(() => navigate('/lots'))
+      .then(() => navigate(`/lots?pays=${form.pays}`))
       .catch(() => setError("Échec de la création du lot. Vérifiez les champs et réessayez."))
       .finally(() => setSubmitting(false))
   }
 
   return (
     <div>
-      <div className="page-header">
-        <h2>Ajouter un lot</h2>
-        <p>Créer un nouveau lot de stockage</p>
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">Ajouter un lot</h1>
+          <p className="page-sub">Créer un nouveau lot de stockage</p>
+        </div>
       </div>
 
       {error && <div className="error-banner">{error}</div>}
@@ -111,14 +113,14 @@ export default function LotAjout() {
         <div className="form-actions">
           <button
             type="button"
-            className="btn btn-secondary"
+            className="btn-ghost"
             onClick={() => navigate(-1)}
           >
             Annuler
           </button>
           <button
             type="submit"
-            className="btn btn-primary"
+            className="btn"
             disabled={submitting}
           >
             {submitting ? 'Création…' : 'Créer le lot'}

@@ -41,7 +41,7 @@ export default function LotDetail() {
 
   if (error) return (
     <div>
-      <Link to="/lots" className="back-link">← Retour aux lots</Link>
+      <Link to="/lots" className="btn-ghost" style={{ marginBottom: 16 }}>← Retour aux lots</Link>
       <div className="error-banner">{error}</div>
     </div>
   )
@@ -54,61 +54,82 @@ export default function LotDetail() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
-        <Link to={`/lots?pays=${pays}`} className="back-link" style={{ marginBottom: 0 }}>← Retour aux lots</Link>
+      <div className="detail-top">
+        <Link to={`/lots?pays=${pays}`} className="btn-ghost">← Retour aux lots</Link>
         <button
-          className="btn btn-danger"
+          className="btn-danger"
           onClick={handleDelete}
           disabled={deleting}
-          style={{ marginLeft: 'auto' }}
         >
           {deleting ? 'Suppression…' : 'Supprimer le lot'}
         </button>
       </div>
 
-      <div className="page-header">
-        <h2>{lot.id}</h2>
-        <p>{lot.exploitation} — {paysLabel}</p>
-      </div>
+      <h1 className="detail-id">{lot.id}</h1>
+      <p className="detail-sub">{lot.exploitation} — {paysLabel}</p>
 
-      <div className="info-grid">
-        <div className="info-item">
-          <label>ID</label>
-          <p className="cell-mono">{lot.id}</p>
+      <div className="info-bar">
+        <div className="info-cell">
+          <div className="info-lbl">ID</div>
+          <div className="info-val mono">{lot.id}</div>
         </div>
-        <div className="info-item">
-          <label>Exploitation</label>
-          <p>{lot.exploitation}</p>
+        <div className="info-cell">
+          <div className="info-lbl">Exploitation</div>
+          <div className="info-val">{lot.exploitation}</div>
         </div>
-        <div className="info-item">
-          <label>Entrepôt</label>
-          <p>{lot.entrepot_id}</p>
+        <div className="info-cell">
+          <div className="info-lbl">Entrepôt</div>
+          <div className="info-val">{lot.entrepot_id}</div>
         </div>
-        <div className="info-item">
-          <label>Date stockage</label>
-          <p>{new Date(lot.date_stockage).toLocaleDateString('fr-FR')}</p>
+        <div className="info-cell">
+          <div className="info-lbl">Date stockage</div>
+          <div className="info-val">{new Date(lot.date_stockage).toLocaleDateString('fr-FR')}</div>
         </div>
-        <div className="info-item">
-          <label>Statut</label>
-          <p><StatutBadge statut={lot.statut} /></p>
+        <div className="info-cell">
+          <div className="info-lbl">Statut</div>
+          <div className="info-val"><StatutBadge statut={lot.statut} /></div>
         </div>
-        <div className="info-item">
-          <label>Mesures</label>
-          <p>{mesures.length} relevés</p>
+        <div className="info-cell">
+          <div className="info-lbl">Mesures</div>
+          <div className="info-val">{mesures.length} relevés</div>
+        </div>
+        <div className="info-cell">
+          <div className="info-lbl">Dernière mesure</div>
+          <div className="info-val mono">
+            {mesures.length > 0
+              ? new Date(mesures[mesures.length - 1].timestamp).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
+              : '—'}
+          </div>
         </div>
       </div>
 
       {mesures.length === 0 ? (
         <div className="empty">Aucune mesure disponible pour cet entrepôt.</div>
       ) : (
-        <div className="charts-grid">
+        <div className="chart-grid">
           <div className="chart-card">
-            <h3>Température (°C) — seuils {paysLabel} : {seuilTemp.min}–{seuilTemp.max}°C / idéal {seuilTemp.ideal}°C</h3>
-            <MesureChart mesures={mesures} type="temperature" pays={pays as Pays} />
+            <div className="chart-title">Température (°C) — <b>seuils {paysLabel} : {seuilTemp.min}–{seuilTemp.max}°C / idéal {seuilTemp.ideal}°C</b></div>
+            <div className="chart-canvas-wrap">
+              <MesureChart mesures={mesures} type="temperature" pays={pays as Pays} />
+            </div>
+            <div className="chart-legend">
+              <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--blue)' }} />Température</div>
+              <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--red)', opacity: .7 }} />Max</div>
+              <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--green)', opacity: .7 }} />Idéal</div>
+              <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--red)', opacity: .7 }} />Min</div>
+            </div>
           </div>
           <div className="chart-card">
-            <h3>Humidité (%) — seuils {paysLabel} : {seuilHum.min}–{seuilHum.max}% / idéal {seuilHum.ideal}%</h3>
-            <MesureChart mesures={mesures} type="humidity" pays={pays as Pays} />
+            <div className="chart-title">Humidité (%) — <b>seuils {paysLabel} : {seuilHum.min}–{seuilHum.max}% / idéal {seuilHum.ideal}%</b></div>
+            <div className="chart-canvas-wrap">
+              <MesureChart mesures={mesures} type="humidity" pays={pays as Pays} />
+            </div>
+            <div className="chart-legend">
+              <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--gold)' }} />Humidité</div>
+              <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--red)', opacity: .7 }} />Max</div>
+              <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--green)', opacity: .7 }} />Idéal</div>
+              <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--red)', opacity: .7 }} />Min</div>
+            </div>
           </div>
         </div>
       )}

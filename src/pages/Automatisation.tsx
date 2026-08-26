@@ -1,60 +1,60 @@
 export default function Automatisation() {
   return (
     <div>
-      <div className="page-header">
-        <h2>Automatisation des entrepôts</h2>
-        <p>Phase 2 — Prototype de schéma de fonctionnement et questionnaire de cadrage</p>
-      </div>
-
-      <div className="section-header">Logique de fonctionnement envisagée</div>
-      <div className="card automatisation-card">
-        <div className="flow">
-          <div className="flow-step">
-            <span className="flow-step-label">Capteurs</span>
-            <span className="flow-step-detail">Température / humidité — module IoT existant</span>
-          </div>
-          <div className="flow-arrow">→</div>
-          <div className="flow-step">
-            <span className="flow-step-label">Traitement / décision</span>
-            <span className="flow-step-detail">Comparaison aux seuils pays ± tolérance, hystérésis anti-oscillation</span>
-          </div>
-          <div className="flow-arrow">→</div>
-          <div className="flow-step flow-step-actionneurs">
-            <span className="flow-step-label">Actionneurs</span>
-            <div className="flow-substeps">
-              <span>Chauffage</span>
-              <span>Humidification</span>
-              <span>Aération</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flow-safety">
-          <strong>Sécurités transverses</strong>
-          <ul>
-            <li>Seuils absolus de coupure (au-delà des tolérances pays, arrêt forcé indépendant de la logique normale)</li>
-            <li>Bascule manuel / automatique prioritaire au manuel, accessible localement par le responsable d'entrepôt</li>
-            <li>Arrêt d'urgence logique en cas de perte de connexion capteurs/MQTT (mode sûr par défaut)</li>
-            <li>Journalisation de chaque commande (horodatage, déclencheur, valeur mesurée) pour audit</li>
-          </ul>
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">Automatisation des entrepôts</h1>
+          <p className="page-sub">Phase 2 — Prototype de schéma de fonctionnement et questionnaire de cadrage</p>
         </div>
       </div>
 
-      <div className="section-header section-header-spaced">Cas nominal / cas dégradé</div>
-      <div className="scenario-grid">
-        <div className="card scenario-card scenario-nominal">
-          <h3>Cas nominal</h3>
+      <div className="section-label" style={{ marginTop: 0 }}>Logique de fonctionnement envisagée</div>
+      <div className="flow">
+        <div className="flow-box">
+          <h4>Capteurs</h4>
+          <p>Température / humidité — module IoT existant</p>
+        </div>
+        <div className="flow-arrow">→</div>
+        <div className="flow-box">
+          <h4>Traitement / décision</h4>
+          <p>Comparaison aux seuils pays, tolérance, hystérésis anti-oscillation</p>
+        </div>
+        <div className="flow-arrow">→</div>
+        <div className="flow-box">
+          <h4>Actionneurs</h4>
+          <div className="actuators">
+            <div className="actuator-tag">Chauffage</div>
+            <div className="actuator-tag">Humidification</div>
+            <div className="actuator-tag">Aération</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="safety-box">
+        <h4>Sécurités transverses</h4>
+        <ul>
+          <li>Seuils absolus de coupure (au-delà des tolérances pays), arrêt forcé indépendant de la logique normale</li>
+          <li>Bascule manuel / automatique prioritaire au manuel, accessible localement par le responsable d'entrepôt</li>
+          <li>Arrêt d'urgence logique en cas de perte de connexion capteurs/MQTT (mode sûr par défaut)</li>
+          <li>Journalisation de chaque commande (horodatage, déclencheur, valeur mesurée) pour audit</li>
+        </ul>
+      </div>
+
+      <div className="section-label" style={{ marginTop: 0 }}>Cas nominal / cas dégradé</div>
+      <div className="case-grid">
+        <div className="case-card nominal">
+          <h4>Cas nominal</h4>
           <p>La mesure reste dans la tolérance définie pour le pays. Aucune commande n'est envoyée aux actionneurs ; les relevés continuent d'alimenter l'historique et le dashboard.</p>
         </div>
-        <div className="card scenario-card scenario-degrade">
-          <h3>Cas dégradé</h3>
+        <div className="case-card degrade">
+          <h4>Cas dégradé</h4>
           <p>La mesure dépasse la tolérance. Le système déclenche l'actionneur correspondant, attend une stabilisation avant nouvelle évaluation, et lève l'alerte existante (email au responsable d'exploitation) si la dérive persiste au-delà d'un délai défini.</p>
         </div>
       </div>
 
-      <div className="section-header section-header-spaced">Point d'intégration avec la solution IoT existante</div>
-      <div className="card">
-        <ul className="plain-list">
+      <div className="integration-box">
+        <h4>Point d'intégration avec la solution IoT existante</h4>
+        <ul>
           <li>Réutilisation des capteurs et topics MQTT déjà en place pour les relevés température/humidité.</li>
           <li>Ajout d'un topic de commande dédié par entrepôt (ex. <code>pays/entrepot/actionneurs/commande</code>) consommé par les futurs équipements.</li>
           <li>Un orchestrateur (ex. Node-RED) s'abonne aux mesures, applique les règles de décision, et publie les commandes — sans modifier le backend pays existant.</li>
@@ -62,19 +62,20 @@ export default function Automatisation() {
         </ul>
       </div>
 
-      <div className="section-header section-header-spaced">Questionnaire de cadrage — interview phase 2</div>
+      <div className="section-label" style={{ marginTop: 0 }}>Questionnaire de cadrage — interview Phase 2</div>
       <p className="automatisation-intro">
         À utiliser lors de la prochaine interview avec FutureKawa pour préciser le périmètre de l'automatisation des entrepôts.
       </p>
-
-      {QUESTIONNAIRE.map(section => (
-        <div key={section.titre} className="card questionnaire-section">
-          <h3>{section.titre}</h3>
-          <ol className="questionnaire-list">
-            {section.questions.map(q => <li key={q}>{q}</li>)}
-          </ol>
-        </div>
-      ))}
+      <div className="quest-grid">
+        {QUESTIONNAIRE.map(section => (
+          <div key={section.titre} className="quest-card">
+            <h5>{section.titre}</h5>
+            <ol>
+              {section.questions.map(q => <li key={q}>{q}</li>)}
+            </ol>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

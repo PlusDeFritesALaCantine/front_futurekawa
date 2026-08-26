@@ -16,6 +16,7 @@ export interface Lot {
 export interface Mesure {
   id: string
   entrepot_id: string
+  lot_id?: string
   temperature: number
   humidity: number
   timestamp: string

@@ -14,7 +14,7 @@ interface StatutBadgeProps {
 
 export default function StatutBadge({ statut }: StatutBadgeProps) {
   return (
-    <span className={`badge badge-${statut}`}>
+    <span className={`badge ${statut}`}>
       <span className="badge-dot" />
       {LABELS[statut] ?? statut}
     </span>
