@@ -20,7 +20,17 @@ interface MesureChartProps {
 export default function MesureChart({ mesures, type, pays }: MesureChartProps) {
   const { ideal, min, max } = getSeuil(pays, type)
   const unit = type === 'temperature' ? '°C' : '%'
-  const color = type === 'temperature' ? '#5b8ec4' : '#c99a4b'
+  const root = document.documentElement
+  const css = (v: string) => getComputedStyle(root).getPropertyValue(v).trim()
+  const color = type === 'temperature' ? css('--blue') : css('--gold')
+  const red = css('--red')
+  const green = css('--green')
+  const surface = css('--surface')
+  const text = css('--text')
+  const textDim = css('--text-dim')
+  const textFaint = css('--text-faint')
+  const border = css('--border')
+  const surface2 = css('--surface-2')
   const n = mesures.length
 
   const labels = mesures.map(m =>
@@ -45,7 +55,7 @@ export default function MesureChart({ mesures, type, pays }: MesureChartProps) {
       {
         label: `Max (${max}${unit})`,
         data: Array(n).fill(max),
-        borderColor: '#d1604a',
+        borderColor: red,
         borderDash: [5, 4],
         borderWidth: 1.5,
         pointRadius: 0,
@@ -55,7 +65,7 @@ export default function MesureChart({ mesures, type, pays }: MesureChartProps) {
       {
         label: `Idéal (${ideal}${unit})`,
         data: Array(n).fill(ideal),
-        borderColor: '#5fa374',
+        borderColor: green,
         borderDash: [5, 4],
         borderWidth: 1.5,
         pointRadius: 0,
@@ -65,7 +75,7 @@ export default function MesureChart({ mesures, type, pays }: MesureChartProps) {
       {
         label: `Min (${min}${unit})`,
         data: Array(n).fill(min),
-        borderColor: '#d1604a',
+        borderColor: red,
         borderDash: [5, 4],
         borderWidth: 1.5,
         pointRadius: 0,
@@ -82,23 +92,23 @@ export default function MesureChart({ mesures, type, pays }: MesureChartProps) {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#1c1712',
-        titleColor: '#f1e9dc',
-        bodyColor: '#a89881',
-        borderColor: '#392f23',
+        backgroundColor: surface,
+        titleColor: text,
+        bodyColor: textDim,
+        borderColor: border,
         borderWidth: 1,
       },
     },
     scales: {
       x: {
-        ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#6f6151' },
-        grid: { color: '#241d16' },
+        ticks: { maxTicksLimit: 8, font: { size: 10 }, color: textFaint },
+        grid: { color: surface2 },
       },
       y: {
         min: type === 'temperature' ? min - 6 : min - 8,
         max: max + 8,
-        ticks: { font: { size: 10 }, color: '#6f6151' },
-        grid: { color: '#241d16' },
+        ticks: { font: { size: 10 }, color: textFaint },
+        grid: { color: surface2 },
       },
     },
   }

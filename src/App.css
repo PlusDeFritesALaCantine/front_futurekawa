@@ -22,9 +22,29 @@ html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
   --shadow: 0 10px 30px -12px rgba(0,0,0,.55);
 }
 
+[data-theme="light"] {
+  --bg: #faf8f5;
+  --surface: #ffffff;
+  --surface-2: #f3f0eb;
+  --surface-3: #e8e4dd;
+  --border: #d6cfc5;
+  --border-soft: #e5dfd7;
+  --text: #2c2218;
+  --text-dim: #6b5d4f;
+  --text-faint: #9a8b7a;
+  --gold: #b08530;
+  --gold-soft: #d4a84a;
+  --green: #3d8a54;
+  --yellow: #c49a2a;
+  --blue: #3a72a3;
+  --red: #c44830;
+  --red-soft: #f5e0dc;
+  --shadow: 0 10px 30px -12px rgba(0,0,0,.1);
+}
+
 body {
   background:
-    radial-gradient(1200px 600px at 85% -10%, rgba(201,154,75,.08), transparent 60%),
+    radial-gradient(1200px 600px at 85% -10%, rgba(201,154,75,.06), transparent 60%),
     var(--bg);
   color: var(--text);
   font-family: 'Inter', sans-serif;
@@ -43,7 +63,7 @@ body {
 }
 
 .sidebar {
-  background: linear-gradient(180deg, #191410, #14100c);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
   border-right: 1px solid var(--border-soft);
   padding: 26px 18px;
   display: flex; flex-direction: column;
@@ -369,16 +389,29 @@ tbody tr:hover { background: var(--surface-2); }
 
 /* ===== MUI dark theme catch-all ===== */
 .MuiInputBase-input,
-.MuiOutlinedInput-input { color: #f1e9dc !important; }
-.MuiInputLabel-root { color: #a89881 !important; }
-.MuiOutlinedInput-notchedOutline { border-color: #392f23 !important; }
-.MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline { border-color: #8a6c3a !important; }
-.MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: #c99a4b !important; }
-.MuiInputLabel-root.Mui-focused { color: #c99a4b !important; }
-.MuiInputAdornment-root svg { color: #a89881 !important; }
+.MuiOutlinedInput-input { color: var(--text) !important; }
+.MuiInputLabel-root { color: var(--text-dim) !important; }
+.MuiOutlinedInput-notchedOutline { border-color: var(--border) !important; }
+.MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline { border-color: var(--gold-soft) !important; }
+.MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: var(--gold) !important; }
+.MuiInputLabel-root.Mui-focused { color: var(--gold) !important; }
+.MuiInputAdornment-root svg { color: var(--text-dim) !important; }
 .MuiInputAdornment-root button:hover { background: rgba(201,154,75,.1) !important; }
-.MuiIconButton-root { color: #a89881 !important; }
-.MuiIconButton-root:hover { color: #f1e9dc !important; }
+.MuiIconButton-root { color: var(--text-dim) !important; }
+.MuiIconButton-root:hover { color: var(--text) !important; }
+.MuiPickersDay-root { color: var(--text) !important; }
+.MuiPickersDay-root.Mui-selected { background: var(--gold) !important; color: #fff !important; }
+.MuiDayCalendar-weekDayLabel { color: var(--text-faint) !important; }
+.MuiPickersCalendarHeader-labelContainer { color: var(--text) !important; }
+.MuiPickersArrowSwitcher-button { color: var(--text-dim) !important; }
+.MuiPickerStaticWrapper-content { background: var(--surface) !important; }
+.MuiDateCalendar-root { background: var(--surface) !important; }
+.MuiDayCalendar-header { border-bottom: 1px solid var(--border-soft) !important; }
+.MuiPickersCalendarHeader-switchViewButton { color: var(--text-dim) !important; }
+.MuiClockNumber-root { color: var(--text) !important; }
+.MuiClockPointer-root { background: var(--text) !important; }
+.MuiClock-amButton, .MuiClock-pmButton { color: var(--text) !important; border-color: var(--border) !important; }
+.MuiClock-input { color: var(--text) !important; }
 
 /* ===== utils ===== */
 .loading { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 180px; color: var(--text-dim); font-size: 0.85rem; }

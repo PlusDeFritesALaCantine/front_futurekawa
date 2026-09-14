@@ -123,8 +123,8 @@ export default function Lots() {
                 size: 'small',
                 style: { width: 160 },
                 slotProps: {
-                  input: { style: { color: '#f1e9dc', fontSize: 13 } },
-                  inputLabel: { style: { color: '#a89881', fontSize: 13 } },
+                  input: { style: { fontSize: 13 } },
+                  inputLabel: { style: { fontSize: 13 } },
                 },
               },
             }}
@@ -141,8 +141,8 @@ export default function Lots() {
                 size: 'small',
                 style: { width: 160 },
                 slotProps: {
-                  input: { style: { color: '#f1e9dc', fontSize: 13 } },
-                  inputLabel: { style: { color: '#a89881', fontSize: 13 } },
+                  input: { style: { fontSize: 13 } },
+                  inputLabel: { style: { fontSize: 13 } },
                 },
               },
             }}
