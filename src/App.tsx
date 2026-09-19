@@ -8,6 +8,7 @@ import LotAjout from './pages/LotAjout'
 import Alertes from './pages/Alertes'
 import Automatisation from './pages/Automatisation'
 import Mesures from './pages/Mesures'
+import Parametres from './pages/Parametres'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/mesures" element={<Mesures />} />
           <Route path="/alertes" element={<Alertes />} />
           <Route path="/automatisation" element={<Automatisation />} />
+          <Route path="/parametres" element={<Parametres />} />
         </Routes>
       </main>
       <AlertToasts />

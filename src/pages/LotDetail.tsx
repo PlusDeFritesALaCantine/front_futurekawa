@@ -3,8 +3,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import api from '../api/client'
 import StatutBadge from '../components/StatutBadge'
 import MesureChart from '../components/MesureChart'
-import type { Lot, Mesure, Pays } from '../types'
-import { getSeuil } from '../config/seuils'
+import type { Lot, Mesure, Page, Pays } from '../types'
+import { getSeuil, useSeuils } from '../config/seuils'
+
+const POINTS_COURBE_MAX = 500
 
 export default function LotDetail() {
   const { pays, lotId } = useParams<{ pays: string; lotId: string }>()
@@ -14,27 +16,39 @@ export default function LotDetail() {
   const [deleting, setDeleting] = useState(false)
   const navigate = useNavigate()
 
+  useSeuils(pays as Pays)
+
   useEffect(() => {
-    Promise.all([
-      api.get<Lot[]>(`/pays/${pays}/lots`),
-      api.get<Mesure[]>(`/pays/${pays}/mesures`),
-    ])
-      .then(([lotsRes, mesuresRes]) => {
+    let vivant = true
+
+    api.get<Lot[]>(`/pays/${pays}/lots`)
+      .then(async lotsRes => {
         const found = lotsRes.data.find(l => l.id === lotId)
-        if (!found) { setError('Lot introuvable.'); return }
-        setLot(found)
-        const filtrees = mesuresRes.data
-          .filter(m => m.entrepot_id === found.entrepot_id && new Date(m.timestamp).getTime() >= new Date(found.date_stockage).getTime())
-          .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-        setMesures(filtrees)
+        if (!found) { if (vivant) setError('Lot introuvable.'); return }
+        if (vivant) setLot(found)
+
+        // Le filtrage se fait côté serveur : inutile de rapatrier tout
+        // l'historique du pays pour n'en garder qu'un entrepôt.
+        const { data } = await api.get<Page<Mesure>>(`/pays/${pays}/mesures`, {
+          params: {
+            entrepot_id: found.entrepot_id,
+            debut: new Date(found.date_stockage).toISOString(),
+            limit: POINTS_COURBE_MAX,
+          },
+        })
+        // L'API trie du plus récent au plus ancien ; les courbes se lisent à l'endroit.
+        if (vivant) setMesures([...data.items].reverse())
       })
-      .catch(() => setError(`Impossible de charger les données pour ${pays}.`))
+      .catch(() => { if (vivant) setError(`Impossible de charger les données pour ${pays}.`) })
+
+    return () => { vivant = false }
   }, [pays, lotId])
 
   function handleDelete() {
     if (!window.confirm(`Supprimer le lot ${lotId} ? Cette action est irréversible.`)) return
     setDeleting(true)
-    api.delete(`/lots/${lotId}`)
+    // Passe par le siège : le front ne s'adresse jamais directement à une API pays.
+    api.delete(`/pays/${pays}/lots/${lotId}`)
       .then(() => navigate(`/lots?pays=${pays}`))
       .catch(() => { setError('Impossible de supprimer le lot.'); setDeleting(false) })
   }

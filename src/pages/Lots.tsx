@@ -33,7 +33,9 @@ export default function Lots() {
     Promise.all(
       paysList.map(p => Promise.all([
         api.get<Lot[]>(`/pays/${p}/lots`),
-        api.get<Mesure[]>(`/pays/${p}/mesures`),
+        // Un relevé par entrepôt suffit ici : la colonne « dernière mesure »
+        // n'a pas besoin de l'historique complet du pays.
+        api.get<Mesure[]>(`/pays/${p}/mesures/latest`),
       ]))
     )
       .then(results => {

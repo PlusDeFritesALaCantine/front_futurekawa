@@ -63,7 +63,9 @@ test('page Alertes affiche les lots périmés et mesures hors seuil', async ({ p
   await expect(page.getByText('lot périmé (400 jours de stockage)')).toBeVisible()
   await expect(page.getByText('température 33.5°C hors seuil [26.0-32.0°C]')).toBeVisible()
 
-  await page.getByRole('combobox').selectOption('colombie')
+  // La page porte deux listes déroulantes depuis l'ajout du journal des alertes :
+  // on vise explicitement le filtre pays.
+  await page.getByRole('combobox', { name: 'Filtrer par pays' }).selectOption('colombie')
   await expect(page.getByText('Aucun lot périmé.')).toBeVisible()
   await expect(page.getByText('Aucune mesure hors seuil.')).toBeVisible()
 })

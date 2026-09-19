@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import StatutBadge from '../components/StatutBadge'
 import type { DashboardResponse, Pays } from '../types'
-import { getSeuil } from '../config/seuils'
+import { getSeuil, useSeuils } from '../config/seuils'
 
 const PAYS_CLASS: Record<string, string> = {
   bresil: 'br',
@@ -12,6 +12,9 @@ const PAYS_CLASS: Record<string, string> = {
 }
 
 export default function Dashboard() {
+  // Hydrate les seuils des trois pays depuis l'API (source de vérité unique).
+  useSeuils()
+
   const [data, setData] = useState<DashboardResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()

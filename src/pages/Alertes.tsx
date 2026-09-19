@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import api from '../api/client'
 import StatutBadge from '../components/StatutBadge'
+import JournalAlertes from '../components/JournalAlertes'
 import type { AlerteLot, AlerteMesure, Pays } from '../types'
 
 const PAYS: Pays[] = ['bresil', 'equateur', 'colombie']
@@ -71,7 +72,11 @@ export default function Alertes() {
 
       <div className="filter-row">
         <span className="filter-label">Pays</span>
-        <select value={filtrePays} onChange={e => setFiltrePays(e.target.value)}>
+        <select
+          aria-label="Filtrer par pays"
+          value={filtrePays}
+          onChange={e => setFiltrePays(e.target.value)}
+        >
           <option value="tous">Tous</option>
           {PAYS.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
         </select>
@@ -135,6 +140,8 @@ export default function Alertes() {
           )}
         </>
       )}
+
+      <JournalAlertes paysFiltre={filtrePays} />
     </div>
   )
 }

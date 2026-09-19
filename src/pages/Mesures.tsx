@@ -7,11 +7,16 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import 'dayjs/locale/fr'
 import api from '../api/client'
 import MesureChart from '../components/MesureChart'
-import type { Lot, Mesure, Pays } from '../types'
-import { getSeuil } from '../config/seuils'
+import type { Lot, Mesure, Page, Pays } from '../types'
+import { getSeuil, useSeuils } from '../config/seuils'
 
 const PAYS: Pays[] = ['bresil', 'equateur', 'colombie']
 const PAGE_SIZE = 30
+
+// Fenêtre maximale tracée sur les courbes. L'API plafonne de toute façon à 1000 ;
+// au-delà de quelques centaines de points, un graphique n'apprend plus rien et le
+// navigateur rame. Le tableau, lui, reste paginé page par page.
+const POINTS_COURBE_MAX = 500
 
 export default function Mesures() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -19,58 +24,79 @@ export default function Mesures() {
   const lotFilter = searchParams.get('lot') || ''
   const page = parseInt(searchParams.get('page') || '1', 10)
 
+  useSeuils(pays)
+
   const [lots, setLots] = useState<Lot[]>([])
-  const [mesures, setMesures] = useState<Mesure[]>([])
+  const [pageMesures, setPageMesures] = useState<Page<Mesure>>({
+    items: [], total: 0, limit: PAGE_SIZE, offset: 0,
+  })
+  const [serie, setSerie] = useState<Mesure[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [dateDebut, setDateDebut] = useState<Dayjs | null>(null)
   const [dateFin, setDateFin] = useState<Dayjs | null>(null)
 
   useEffect(() => {
-    setLoading(true)
-    setError(null)
     setDateDebut(null)
     setDateFin(null)
-    Promise.all([
-      api.get<Lot[]>(`/pays/${pays}/lots`),
-      api.get<Mesure[]>(`/pays/${pays}/mesures`),
-    ])
-      .then(([lotsRes, mesuresRes]) => {
-        setLots(lotsRes.data)
-        setMesures(mesuresRes.data.sort((a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        ))
-      })
-      .catch(() => setError(`API ${pays} indisponible`))
-      .finally(() => setLoading(false))
   }, [pays])
 
-  const mesuresFiltrees = useMemo(() => {
-    let result = mesures
+  useEffect(() => {
+    let vivant = true
+    api.get<Lot[]>(`/pays/${pays}/lots`)
+      .then(r => { if (vivant) setLots(r.data) })
+      .catch(() => { /* l'erreur est déjà signalée par le chargement des mesures */ })
+    return () => { vivant = false }
+  }, [pays])
 
-    if (lotFilter) {
-      result = result.filter(m => m.lot_id === lotFilter || m.entrepot_id === lotFilter)
+  // Les filtres sont désormais appliqués en SQL par l'API : le navigateur ne
+  // reçoit plus que ce qu'il affiche, au lieu de tout l'historique du pays.
+  const filtres = useMemo(() => {
+    const lot = lots.find(l => l.id === lotFilter)
+    const params: Record<string, string> = {}
+
+    if (lot) {
+      // Un lot n'a de sens que dans son entrepôt et après sa mise en stock ;
+      // les relevés MQTT ne portent pas de lot_id, filtrer dessus ne montrerait rien.
+      params.entrepot_id = lot.entrepot_id
+      const debutLot = dayjs(lot.date_stockage)
+      const debut = dateDebut && dateDebut.isAfter(debutLot) ? dateDebut : debutLot
+      params.debut = debut.startOf('day').toISOString()
+    } else if (dateDebut) {
+      params.debut = dateDebut.startOf('day').toISOString()
     }
 
-    if (dateDebut) {
-      const debut = dateDebut.startOf('day').toDate().getTime()
-      result = result.filter(m => new Date(m.timestamp).getTime() >= debut)
-    }
+    if (dateFin) params.fin = dateFin.endOf('day').toISOString()
+    return params
+  }, [lots, lotFilter, dateDebut, dateFin])
 
-    if (dateFin) {
-      const fin = dateFin.endOf('day').toDate().getTime()
-      result = result.filter(m => new Date(m.timestamp).getTime() <= fin)
-    }
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+    let vivant = true
 
-    return result
-  }, [mesures, lotFilter, dateDebut, dateFin])
+    Promise.all([
+      api.get<Page<Mesure>>(`/pays/${pays}/mesures`, {
+        params: { ...filtres, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE },
+      }),
+      api.get<Page<Mesure>>(`/pays/${pays}/mesures`, {
+        params: { ...filtres, limit: POINTS_COURBE_MAX, offset: 0 },
+      }),
+    ])
+      .then(([tableau, courbe]) => {
+        if (!vivant) return
+        setPageMesures(tableau.data)
+        // L'API renvoie du plus récent au plus ancien ; les courbes se lisent
+        // dans l'autre sens.
+        setSerie([...courbe.data.items].reverse())
+      })
+      .catch(() => { if (vivant) setError(`API ${pays} indisponible`) })
+      .finally(() => { if (vivant) setLoading(false) })
 
-  const totalPages = Math.ceil(mesuresFiltrees.length / PAGE_SIZE)
-  const mesuresPage = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE
-    return mesuresFiltrees.slice(start, start + PAGE_SIZE)
-  }, [mesuresFiltrees, page])
+    return () => { vivant = false }
+  }, [pays, page, filtres])
 
+  const totalPages = Math.max(1, Math.ceil(pageMesures.total / PAGE_SIZE))
   const seuilTemp = getSeuil(pays, 'temperature')
   const seuilHum = getSeuil(pays, 'humidity')
   const paysLabel = pays.charAt(0).toUpperCase() + pays.slice(1)
@@ -94,14 +120,6 @@ export default function Mesures() {
     next.set('page', String(p))
     setSearchParams(next)
   }
-
-  const mesuresSansFiltreDate = useMemo(() => {
-    let result = mesures
-    if (lotFilter) {
-      result = result.filter(m => m.lot_id === lotFilter || m.entrepot_id === lotFilter)
-    }
-    return result
-  }, [mesures, lotFilter])
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
@@ -174,9 +192,9 @@ export default function Mesures() {
 
           {!loading && !error && (
             <span className="count-pill">
-              {mesuresFiltrees.length} mesure{mesuresFiltrees.length > 1 ? 's' : ''}
-              {(dateDebut || dateFin) && mesuresFiltrees.length !== mesuresSansFiltreDate.length && (
-                <> / {mesuresSansFiltreDate.length} au total</>
+              {pageMesures.total} mesure{pageMesures.total > 1 ? 's' : ''}
+              {pageMesures.total > POINTS_COURBE_MAX && (
+                <> · courbes limitées aux {POINTS_COURBE_MAX} plus récentes</>
               )}
             </span>
           )}
@@ -186,7 +204,7 @@ export default function Mesures() {
 
         {loading ? (
           <div className="loading"><span className="spinner" />Chargement…</div>
-        ) : mesuresFiltrees.length === 0 ? (
+        ) : pageMesures.total === 0 ? (
           <div className="empty">Aucune mesure disponible pour cette période.</div>
         ) : (
           <>
@@ -194,7 +212,7 @@ export default function Mesures() {
               <div className="chart-card">
                 <div className="chart-title">Température (°C) — <b>seuils {paysLabel} : {seuilTemp.min}–{seuilTemp.max}°C / idéal {seuilTemp.ideal}°C</b></div>
                 <div className="chart-canvas-wrap">
-                  <MesureChart mesures={mesuresFiltrees} type="temperature" pays={pays} />
+                  <MesureChart mesures={serie} type="temperature" pays={pays} />
                 </div>
                 <div className="chart-legend">
                   <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--blue)' }} />Température</div>
@@ -206,7 +224,7 @@ export default function Mesures() {
               <div className="chart-card">
                 <div className="chart-title">Humidité (%) — <b>seuils {paysLabel} : {seuilHum.min}–{seuilHum.max}% / idéal {seuilHum.ideal}%</b></div>
                 <div className="chart-canvas-wrap">
-                  <MesureChart mesures={mesuresFiltrees} type="humidity" pays={pays} />
+                  <MesureChart mesures={serie} type="humidity" pays={pays} />
                 </div>
                 <div className="chart-legend">
                   <div className="leg-item"><span className="leg-swatch" style={{ background: 'var(--gold)' }} />Humidité</div>
@@ -229,7 +247,7 @@ export default function Mesures() {
                   </tr>
                 </thead>
                 <tbody>
-                  {mesuresPage.map(m => {
+                  {pageMesures.items.map(m => {
                     const horsSeuilT = m.temperature < seuilTemp.min || m.temperature > seuilTemp.max
                     const horsSeuilH = m.humidity < seuilHum.min || m.humidity > seuilHum.max
                     return (

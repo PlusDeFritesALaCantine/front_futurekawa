@@ -36,7 +36,7 @@ export default function LotAjout() {
     setSubmitting(true)
     setError(null)
 
-    api.post('/lots', form)
+    api.post(`/pays/${form.pays}/lots`, form)
       .then(() => navigate(`/lots?pays=${form.pays}`))
       .catch(() => setError("Échec de la création du lot. Vérifiez les champs et réessayez."))
       .finally(() => setSubmitting(false))
