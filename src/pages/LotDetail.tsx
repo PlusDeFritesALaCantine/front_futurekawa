@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import api from '../api/client'
+import api, { normaliserPage } from '../api/client'
 import StatutBadge from '../components/StatutBadge'
 import MesureChart from '../components/MesureChart'
 import type { Lot, Mesure, Page, Pays } from '../types'
@@ -37,7 +37,7 @@ export default function LotDetail() {
           },
         })
         // L'API trie du plus récent au plus ancien ; les courbes se lisent à l'endroit.
-        if (vivant) setMesures([...data.items].reverse())
+        if (vivant) setMesures([...normaliserPage<Mesure>(data, POINTS_COURBE_MAX, 0).items].reverse())
       })
       .catch(() => { if (vivant) setError(`Impossible de charger les données pour ${pays}.`) })
 

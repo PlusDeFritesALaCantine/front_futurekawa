@@ -5,7 +5,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import 'dayjs/locale/fr'
-import api from '../api/client'
+import api, { normaliserPage } from '../api/client'
 import MesureChart from '../components/MesureChart'
 import type { Lot, Mesure, Page, Pays } from '../types'
 import { getSeuil, useSeuils } from '../config/seuils'
@@ -85,10 +85,10 @@ export default function Mesures() {
     ])
       .then(([tableau, courbe]) => {
         if (!vivant) return
-        setPageMesures(tableau.data)
+        setPageMesures(normaliserPage<Mesure>(tableau.data, PAGE_SIZE, (page - 1) * PAGE_SIZE))
         // L'API renvoie du plus récent au plus ancien ; les courbes se lisent
         // dans l'autre sens.
-        setSerie([...courbe.data.items].reverse())
+        setSerie([...normaliserPage<Mesure>(courbe.data, POINTS_COURBE_MAX, 0).items].reverse())
       })
       .catch(() => { if (vivant) setError(`API ${pays} indisponible`) })
       .finally(() => { if (vivant) setLoading(false) })
