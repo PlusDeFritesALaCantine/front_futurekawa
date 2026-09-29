@@ -1,0 +1,9 @@
+services:
+  front_futurekawa:
+    build:
+      context: .
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://api.futurekawa.local}
+    ports:
+      - "80:80"
+    restart: unless-stopped

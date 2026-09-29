@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: futurekawa-front-service
+  namespace: futurekawa-app
+spec:
+  type: ClusterIP
+  selector:
+    app: futurekawa-front
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
